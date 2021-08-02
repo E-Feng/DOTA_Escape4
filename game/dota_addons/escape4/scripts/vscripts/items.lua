@@ -12,6 +12,8 @@ function MangoEaten( event )
 
   local partname = "particles/items3_fx/mango_active.vpcf"
   local part = ParticleManager:CreateParticle(partname, PATTACH_ABSORIGIN, event.target)
+
+  item:RemoveSelf()
 end
 
 function CheeseEaten(event)
@@ -98,6 +100,37 @@ function DropItemOnDeath(event)
             _G.Cheeses[itemid] = nil
             _G.Cheeses[newItem:GetEntityIndex()] = "dropped"
           end
+        end
+      end
+    end
+  end
+end
+
+function DropItemOnDeathMango(event) 
+  local killedUnit = EntIndexToHScript( event.caster_entindex )
+  local itemName = tostring(event.ability:GetAbilityName())
+  local itemid = event.ability:GetEntityIndex()
+  local level = GameRules.CLevel
+
+  --print(itemName, itemid)
+  if killedUnit:IsHero() or killedUnit:HasInventory() then
+    for itemSlot = 0, 8, 1 do 
+      if killedUnit ~= nil then --checks to make sure the killed unit is not nonexistent.
+        local item = killedUnit:GetItemInSlot( itemSlot ) -- uses a variable which gets the actual item in the slot specified starting at 0, 1st slot, and ending at 5,the 6th slot.
+        if item ~= nil and item:GetName() == itemName then -- makes sure that the item exists and making sure it is the correct item
+          local foundItemID = item:GetEntityIndex()
+          
+          local newItem = CreateItem(itemName, nil, nil) -- creates a new variable which recreates the item we want to drop and then sets it to have no owner
+          killedUnit:RemoveItem(item) -- finally, the item is removed from the original units inventory.
+          
+          -- Respawning item at spawn or at death spot
+          local spawnPos = killedUnit:GetAbsOrigin()
+
+          CreateItemOnPositionSync(spawnPos, newItem) -- takes the newItem variable and creates the physical item at the killed unit's location
+
+          _G.mangos[newItem:GetEntityIndex()] = newItem
+          _G.mangos[foundItemID] = nil
+
         end
       end
     end

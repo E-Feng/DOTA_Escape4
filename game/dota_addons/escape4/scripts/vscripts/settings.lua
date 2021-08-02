@@ -1,11 +1,11 @@
 -- Debugging purposes and level design
 
-USE_LEVEL_DEBUG = true
-LEVEL_DEBUG = 1
+USE_LEVEL_DEBUG = false
+LEVEL_DEBUG = 6
 
 GIVE_ALL_SPELLS = false
 GIVE_IMMO_SPELL = true
-GIVE_BLINK = true
+GIVE_BLINK = false
 
 -- Constants
 BEACON_NORMAL = 84

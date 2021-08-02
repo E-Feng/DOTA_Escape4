@@ -3,7 +3,7 @@ WebApi = WebApi or {}
 local isTesting = IsInToolsMode() -- and false
 local key = ""
 local dedicatedServerKey = "M4_" .. (IsDedicatedServer() and GetDedicatedServerKeyV2("1.0") or key)
-local leaderboardURL = "https://dota-escape3.firebaseio.com/" .. dedicatedServerKey .. "/"
+local leaderboardURL = "https://dota-escape4-default-rtdb.firebaseio.com/" .. dedicatedServerKey .. "/"
 local patreonURL = "https://dota-escape-patreons.firebaseio.com/" .. dedicatedServerKey .. "/"
 
 local DENY_BUGGED_SCORES = false

@@ -43,6 +43,7 @@ function barebones:HeroKilled(hero, attacker, ability)
   -- If hero steps onto grass/lava origin is moved closer to path
   hero:SetBaseMagicalResistanceValue(25)
   hero.deadHeroPos = hero:GetAbsOrigin()
+  hero.mana = hero:GetMana()
 
   if string.find(ability:GetClassname(), "ability") then
     if ability:GetAbilityName() == "self_immolation" then
@@ -107,6 +108,8 @@ function barebones:HeroRevived(deadhero, alivehero)
   deadhero.particleNumber = nil
   deadhero.outOfBoundsDeath = false
 
+  deadhero:SetMana(deadhero.mana)
+
   local dummy = EntIndexToHScript(deadhero.dummyPartEntIndex)
   if dummy and dummy:IsAlive() then
     dummy:RemoveSelf()
@@ -166,6 +169,8 @@ function barebones:ReviveAll()
     hero:SetBaseMoveSpeed(300)
     hero:Stop()
     hero.deadHeroPos = nil
+    hero:SetMana(hero.mana)
+
     print("Hero Idx(", i, ") respawned at ", hero:GetAbsOrigin())
     local particle = ParticleManager:CreateParticle("particles/units/heroes/hero_omniknight/omniknight_purification.vpcf", PATTACH_ABSORIGIN_FOLLOW, hero)
     if hero.particleNumber then
@@ -335,7 +340,7 @@ function barebones:RemoveAllSkills()
         end)
       end
     end]]
-    for i = 0,4 do
+    for i = 0,5 do
       local abil = hero:GetAbilityByIndex(i)
       local abilName = abil:GetAbilityName()
       local last = string.sub(abilName, -1)

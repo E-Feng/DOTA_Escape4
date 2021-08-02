@@ -4,7 +4,7 @@ local boss
 local r1 = 900
 local r2 = 2500
 
-local patrolMsStart = 300
+local patrolMsStart = 350
 
 local patrolsTable = {}
 local tombstoneTable = {}
@@ -16,20 +16,20 @@ function barebones:FinalBossThinker()
 
   -- Wave spawning constants
   local rate = 0.25
-  local waveRate = 6
+  local waveRate = 5
 
-  local deathWaves = 4
-  local deathWaveRate = 2.5
+  local deathWaveRate = 3
 
-  -- HP constants, Min hp = 10, Max hp = 14
-  local numPlayers = #Players
+  -- HP constants, Min hp = 8, Max hp = 12
+  local numPlayers = #Players + 1
   local minPlayers = 4
   local maxPlayers = 8
-  local minHp = 10
+  local minHp = 9
 
   numPlayers = math.max(numPlayers, minPlayers)
   numPlayers = math.min(numPlayers, maxPlayers)
   local maxHp = minHp + numPlayers - minPlayers
+
 
   -- Movement constants
   local bossMsMin = 325
@@ -41,12 +41,13 @@ function barebones:FinalBossThinker()
 
   -- Wave function names
   local waveNames = {
+    "SpawnFull",
     "SpawnBarrage",
     "SpawnRapidWide",
     "SpawnTarget",
     "SpawnRapid",
   }
-  local currentWaves = {"SpawnFull"}
+  local currentWaves = waveNames  -- Removing adding waves at a time
 
   local bossSpawn = center + RandomVector(bossRadMin)
 
@@ -58,6 +59,8 @@ function barebones:FinalBossThinker()
 
   boss.goal = bossSpawn
   boss.pausing = false
+
+  _G.BossHp = maxHp
 
   print("Sending initial final boss net table")
   CustomNetTables:SetTableValue("final_boss", "data", {hp=maxHp, max=maxHp})
@@ -89,13 +92,15 @@ function barebones:FinalBossThinker()
         IncreasePatrolSpeed(currentHp, maxHp)
         boss.hp = currentHp
 
-        -- Adding more waves to current
-        if TableLength(waveNames) > 0 then
-          local nextWave = table.remove(waveNames, 1)
-          table.insert(currentWaves, nextWave)
+        _G.BossHp = currentHp
 
-          print(nextWave, TableLength(waveNames))
-        end
+        -- Adding more waves to current
+        --if TableLength(waveNames) > 0 then
+        --  local nextWave = table.remove(waveNames, 1)
+        --  table.insert(currentWaves, nextWave)
+        --
+        --  print(nextWave, TableLength(waveNames))
+        --end
       end
 
       -- Moving around 
@@ -120,22 +125,25 @@ function barebones:FinalBossThinker()
 
       -- Dealing with death immediately, else for post death animation
       if currentHp == 0 then
-        for i = 1,deathWaves do
-          Timers:CreateTimer(deathWaveRate*i, function()
-            local wave = GetRandomTableElement(waveNames)
-            Waves[wave](self, 0, maxHp)
-          end)
-        end
+        Timers:CreateTimer(deathWaveRate, function()
+          local wave = GetRandomTableElement(waveNames)
+          Waves[wave](self, 0, maxHp)
+
+          return deathWaveRate
+        end)
         --EmitSoundOnLocationWithCaster(center, "Hero_Undying.Death", tombstoneTable[1]) 
-        
-        return deathWaves*deathWaveRate
+        CustomNetTables:SetTableValue("final_boss", "data", {hp=0, max=maxHp})
+
+        Timers:CreateTimer(15, function()
+          DestroyTombstones()
+        end)
+
+        return
       end
 
       c = c + rate
       return rate
     else
-      DestroyTombstones()
-      CustomNetTables:SetTableValue("final_boss", "data", {hp=0, max=maxHp})
       return
     end
   end)
@@ -148,9 +156,9 @@ function Waves:SpawnFull(hp, maxHp)
   local unitsTable = {}
 
   -- Constants to balance
-  local unitsMin = 16
-  local unitsMax = 30
-  local msMin = 350
+  local unitsMin = 18
+  local unitsMax = 32
+  local msMin = 375
   local msMax = 650
 
   local offset = RandomFloat(0, 90)
@@ -291,14 +299,14 @@ end
 function Waves:SpawnBarrage(hp, maxHp)
   local weight = (maxHp - hp)/maxHp
 
-  local unitsMin = 8
-  local unitsMax = 30
-  local spreadMin = 45
-  local spreadMax = 75
+  local unitsMin = 15
+  local unitsMax = 40
+  local spreadMin = 50
+  local spreadMax = 80
   local delay = 0.03
 
-  local msMin = 225
-  local msMax = 525
+  local msMin = 250
+  local msMax = 550
 
   -- Generating random values
   local units = RandomWeightedFloat(unitsMin, unitsMax, weight)
@@ -331,11 +339,12 @@ end
 function Waves:SpawnTarget(hp, maxHp)
   local weight = (maxHp - hp)/maxHp
 
-  local ms = 800
-  local unitsMin = 8
-  local unitsMax = 20
-  local chanceMin = 0.40
-  local chanceMax = 0.75
+  local ms = 825
+  local unitsMin = 16
+  local unitsMax = 36
+  local chanceMin = 0.50
+  local chanceMax = 0.80
+  local angleVariance = 8
   local rate = 0.1
 
   -- Generate random
@@ -365,6 +374,7 @@ function Waves:SpawnTarget(hp, maxHp)
         local randTarget = GetRandomTableElement(targets)
         local posTarget = randTarget:GetAbsOrigin()
         angle = math.atan((posTarget.y - center.y)/(posTarget.x - center.x))
+        angle = angle + math.rad(RandomFloat(-angleVariance, angleVariance))
       end
 
       local goal = Vector(center.x + r2*math.cos(angle), center.y + r2*math.sin(angle), 128)
@@ -402,6 +412,8 @@ function SpawnPatrols()
       local angle = math.rad(j*(360/nUnits))
       local spawn = Vector(center.x + r*math.cos(angle), center.y + r*math.sin(angle), 128)
       local unit = CreateUnitByName("npc_creep_patrol_no_turn", spawn, true, nil, nil, DOTA_TEAM_ZOMBIES)
+      unit:AddNewModifier(unit, nil, "modifier_bloodseeker_thirst", {})
+      unit:AddNewModifier(unit, nil, "modifier_bloodseeker_thirst_speed", {})
       unit:SetBaseMoveSpeed(ms)
       unit.ms = ms
       unit.angle = angle
@@ -441,7 +453,7 @@ end
 
 function IncreasePatrolSpeed(hp, maxHp)
   print("Speeding up patrols")
-  local maxMs = 550
+  local maxMs = 575
   local newMs = MapValue(hp, maxHp, 0, patrolMsStart, maxMs)
   newMs = math.floor(newMs + 0.5)
   print(newMs)
@@ -484,68 +496,115 @@ end
 function DestroyTombstones()
   print("Destroying tombstones")
   for _,tombstone in pairs(tombstoneTable) do
-    tombstone:ForceKill(true)
+    if CalcDist2D(center, tombstone:GetAbsOrigin()) > 500 then
+      tombstone:ForceKill(true)
+    end
   end
 end
+
+_G.mangos = {}
 
 -- This functiion is for the mango spawning for final boss
 function barebones:MangoThinker()
   print("Final boss mango thinker started")
-  local mango
 
   local r1m = r1
-  local r2m = r2 * (2/3)
+  local r2m = r2 * (4/5)
   local angle1 = -45
   local angle2 = 225
+
+  local emitRate = 3
+  local emitLocations = {}
+  local hasEmitted = false
+
+  -- Init mango spawn
+  for i = 1,2 do
+    local angle = math.rad(RandomFloat(angle1, angle2))
+    local r = RandomFloat(r1m, r2m)
+    local pos = Vector(center.x + r*math.cos(angle), center.y + r*math.sin(angle), 128)
+
+    newMango = CreateItem("item_mango_custom_self", nil, nil)
+    CreateItemOnPositionSync(pos, newMango)
+
+    _G.mangos[newMango:GetEntityIndex()] = newMango
+  end
+
 
   Timers:CreateTimer(1, function()
     --print(IsValidEntity(mango))
     local totalMana = 0
+    local availableMangos = 0
+
     for _,hero in pairs(Players) do
-      totalMana = totalMana + hero:GetMana()
+      if hero:GetMana() > 0 then
+        totalMana = totalMana + 1
+      end
     end
 
+    for _,mango in pairs(_G.mangos) do
+      if IsValidEntity(mango) then
+        availableMangos = availableMangos + 1
+      end
+    end
+
+
     if GameRules.CLevel == 6 then
-      if IsValidEntity(mango) or totalMana > 0 then
-        -- Emit indicator
-        local pos
-        if totalMana > 0 then
-          for _,hero in pairs(Players) do
-            if hero:GetMana() > 0 then
-              pos = hero:GetAbsOrigin()
+      if (totalMana + availableMangos) < 2 then
+        for idx,mango in pairs(_G.mangos) do
+          if not IsValidEntity(mango) then
+            if (totalMana + availableMangos) < 2 then
+              print("Spawning mango")
+              -- Spawn mango
+              local angle = math.rad(RandomFloat(angle1, angle2))
+              local r = RandomFloat(r1m, r2m)
+              local pos = Vector(center.x + r*math.cos(angle), center.y + r*math.sin(angle), 128)
+      
+              newMango = CreateItem("item_mango_custom_self", nil, nil)
+              CreateItemOnPositionSync(pos, newMango)
+
+              _G.mangos[newMango:GetEntityIndex()] = newMango
+              _G.mangos[idx] = nil
+
+              availableMangos = availableMangos + 1
             end
           end
-        else
-          local container = mango:GetContainer()
-          if mango:GetContainer() then
-            pos = container:GetAbsOrigin()
-          else
-            pos = mango:GetAbsOrigin()
+        end
+      end
+
+
+      -- Emitting indications for all positions
+      if not hasEmitted then
+        hasEmitted = true
+
+        for _,hero in pairs(Players) do
+          if hero:GetMana() > 0 then
+            table.insert(emitLocations, hero:GetAbsOrigin())
+          end
+        end
+    
+        for _,mango in pairs(_G.mangos) do
+          if IsValidEntity(mango) then
+            if mango:GetContainer() then
+              table.insert(emitLocations, mango:GetContainer():GetAbsOrigin())
+            else
+              table.insert(emitLocations, mango:GetAbsOrigin())
+            end
           end
         end
 
-        if not mango.emitted then
+        for _,emitPos in pairs(emitLocations) do
           local part = ParticleManager:CreateParticle("particles/misc/ring_emitter.vpcf", PATTACH_ABSORIGIN, boss)
-          ParticleManager:SetParticleControl(part, 0, pos)
-          mango.emitted = true
-
-          Timers:CreateTimer(5, function()
-            mango.emitted = false
-          end)
+          ParticleManager:SetParticleControl(part, 0, emitPos)
         end
-      else
-        -- Spawn mango
-        local angle = math.rad(RandomFloat(angle1, angle2))
-        local r = RandomFloat(r1m, r2m)
-        local pos = Vector(center.x + r*math.cos(angle), center.y + r*math.sin(angle), 128)
 
-        mango = CreateItem("item_mango_custom_self", nil, nil)
-        mango.spawn = pos
-        mango.respawn = false
-        mango.emitted = false
-        CreateItemOnPositionSync(pos, mango) 
+        emitLocations = {}
+
+        Timers:CreateTimer(emitRate, function()
+          hasEmitted = false
+        end)
       end
-      return 1.5
+
+      return 2
     else
       return
     end

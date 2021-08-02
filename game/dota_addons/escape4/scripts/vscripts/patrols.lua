@@ -18,6 +18,11 @@ function Patrols:Initialize(dataTable)
     end)
   end 
 
+  if ms > 550 then
+    unit:AddNewModifier(unit, nil, "modifier_bloodseeker_thirst", {})
+    unit:AddNewModifier(unit, nil, "modifier_bloodseeker_thirst_speed", {})
+  end
+
   unit:FindAbilityByName("patrol_unit_passive"):SetLevel(1)
 
   return unit

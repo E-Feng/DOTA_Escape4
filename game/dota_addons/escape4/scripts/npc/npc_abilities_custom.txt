@@ -74,7 +74,7 @@
 
 		// Time		
 		//-------------------------------------------------------------------------------------------------------------
-		"AbilityCooldown"				"0"
+		"AbilityCooldown"				"0.5"
 		"AbilityCharges"				"2"
 		"AbilityChargeRestoreTime"		"5"
 

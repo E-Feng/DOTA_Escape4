@@ -114,6 +114,8 @@ function barebones:OnHeroInGame(hero)
 		hero.phaseMod = false
 
 		hero.outOfBoundsDeath = false
+		hero.mana = 0
+		hero.hookZ = 0
 
 
 	Timers:CreateTimer(0.5, function()
@@ -156,7 +158,10 @@ function barebones:OnHeroInGame(hero)
 		hero:AddItemByName("item_patreon_get_cheese1")
 		hero:AddItemByName("item_patreon_chest")
 
-		hero:AddItemByName("item_blink_custom")
+		if GIVE_BLINK then
+			hero:AddItemByName("item_blink_custom")
+		end
+
 		--hero:AddItemByName("item_patreon_larger_x")
 		--hero:AddItemByName("item_patreon_wind_lace")
 		--hero:AddItemByName("item_patreon_phoenix_ash")
@@ -291,15 +296,42 @@ function barebones:OnAbilityUsed(keys)
 
 	--local hero = PlayerResource:GetPlayer(playerID):GetAssignedHero()
 	local hero = EntIndexToHScript(caster)
-	if ability_name == "pa_phantom_strike_custom" then
-		print("Blink strike casted")
-		Timers:CreateTimer(0, function()
-			print(hero:GetName(), hero:GetAbsOrigin().z)
-			if hero:GetAbsOrigin().z > 500 then
-				print("Blinked onto map border, killing now")
-				hero:SetBaseMagicalResistanceValue(25)
+
+
+	if ability_name == "invoker_sun_strike_custom" then
+		local playerName = PlayerResource:GetPlayerName(playerID)
+
+		hero.sunstrikesCasted = hero.sunstrikesCasted or 0
+		hero.sunstrikesHit = hero.sunstrikesHit or 0
+
+		hero.sunstrikesCasted = hero.sunstrikesCasted + 1
+
+		local tempHp = _G.BossHp
+		local color = "lime"
+		local status = " hit!"
+
+		Timers:CreateTimer(2, function()
+			if _G.BossHp == tempHp then
+				color = "red"
+				status = " missed!"
+			else
+				hero.sunstrikesHit = hero.sunstrikesHit + 1
 			end
+
+			local percentage = " (" .. hero.sunstrikesHit .. "/" .. hero.sunstrikesCasted .. ")"
+			local str = playerName .. percentage .. status
+			local msg = {
+				text = str,
+				duration = 3.0,
+				style={color=color, ["font-size"]="32px"}
+			}
+			Notifications:TopToAll(msg)
 		end)
+	elseif ability_name == "rattletrap_hookshot_custom" then
+		--print("Z pos after hook: ", hero:GetAbsOrigin().z)
+		hero.hookZ = hero:GetAbsOrigin().z
+	elseif ability_name == "enchantress_bunny_hop_custom" then
+		hero:AddNewModifier(hero, nil, "modifier_stunned", {duration=0.36})
 	end
 
 	-- If you need to adjust abilities on their cast, use Order Filter or modifier events, not this

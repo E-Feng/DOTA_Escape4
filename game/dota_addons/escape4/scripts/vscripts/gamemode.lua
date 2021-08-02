@@ -306,6 +306,8 @@ function barebones:InitGameMode()
 	-- Spell names to change to pure damage
 	_G.SpellList = {}
 
+	_G.BossHp = 0
+
   DOTA_TEAM_ZOMBIES = DOTA_TEAM_BADGUYS
 
   TeamColors = {}
@@ -374,7 +376,7 @@ function barebones:InitGameMode()
 								 {"p4_2a", "p4_2b"},
 								 {"p4_3a", "p4_3b"},
 								 {"p4_4a", "p4_4b"}, -- 40
-								 {"p5_1a", "p5_1b", "p5_1c", "p5_1d"},
+								 {"p5_1a", "p5_1b", "p5_1c", "p5_1d",  "p5_1e", "p5_1f", "p5_1g", "p5_1h"},
 								 {"p5_2a", "p5_2b"}, 
 								 {"p5_3a", "p5_3b"}, 
 								 {"p5_4a", "p5_4b"},
@@ -401,8 +403,8 @@ function barebones:InitGameMode()
   -- Table for all ents (exc pat creeps) {item/unit/part, ent#, entindex, spawn, function, etc}
   EntList = {
 							{ -- Level 1
-								{2, ENT_MULTI, 0, "m1_1a", "MultiPatrolThinker", "m1_1b", 425, 0, 410},
-								{2, ENT_MULTI, 0, "m1_2a", "MultiPatrolThinker", "m1_2b", 350, 0, 320},
+								{2, ENT_MULTI, 0, "m1_1a", "MultiPatrolThinker", "m1_1b", 425, 0, 360},
+								{2, ENT_MULTI, 0, "m1_2a", "MultiPatrolThinker", "m1_2b", 350, 0, 265},
 								{1, ENT_CHEES, 0, "cheese1_1", nil},
                 {1, ENT_MANGO, 0, "mango1_1", nil, false},
 								{2, ENT_GATES, 0, "gate1_1a", "GateThinker", "gate1_1b", Vector(0, 1, 0), 1},
@@ -441,29 +443,23 @@ function barebones:InitGameMode()
               },
 							{ -- Level 2
 								{1, ENT_CHEES, 0, "cheese2_1", nil},
-								{2, ENT_CARTY, 0, "carty2_1a", "MovingWallThinker", "carty2_1b", 225, 0, 250, 3},
-								{2, ENT_CARTY, 0, "carty2_2a", "MovingWallThinker", "carty2_2b", 225, 0, 425, 2.5},  
+								{2, ENT_CARTY, 0, "carty2_1a", "MovingWallThinker", "carty2_1b", 225, 0, 240, 4},
+								{2, ENT_CARTY, 0, "carty2_2a", "MovingWallThinker", "carty2_2b", 225, 0, 415, 3.5},  
 								{1, ENT_MANGO, 0, "mango2_1", nil, false},
 								{1, ENT_MANGO, 0, "mango2_2", nil, false},
-								{1, ENT_MANGO, 0, "mango2_3", nil, false},
-								{1, ENT_MANGO, 0, "mango2_4", nil, false},
-								{1, ENT_MANGO, 0, "mango2_5", nil, false},
-								{1, ENT_MANGO, 0, "mango2_6", nil, false},
-								{1, ENT_MANGO, 0, "mango2_7", nil, false},
-								{1, ENT_MANGO, 0, "mango2_8", nil, false},
-								{2, ENT_GATES, 0, "gate2_1a", "GateThinker", "gate2_1b", Vector(0, 1, 0), 8},
+								{2, ENT_GATES, 0, "gate2_1a", "GateThinker", "gate2_1b", Vector(0, 1, 0), 2},
 								{2, ENT_PATRL, 0, "p2_1a", "PatrolInitial", 27, 0.03, 325},
 								{2, ENT_PATRL, 0, "p2_2a", "PatrolInitial", 28, 0.03, 425},
-								{2, ENT_AOELS, 0, "lsa2_2_1", "AOEThinker", 4, 2, true},  
-								{2, ENT_AOELS, 0, "lsa2_2_2", "AOEThinker", 4, 0, false},  
-								{2, ENT_AOELS, 0, "lsa2_2_3", "AOEThinker", 4, 2, false},  
-								{2, ENT_AOELS, 0, "lsa2_2_4", "AOEThinker", 4, 0, false},  
-								{2, ENT_AOELS, 0, "lsa2_2_5", "AOEThinker", 4, 2, false},  
-								{2, ENT_AOELS, 0, "lsa2_2_6", "AOEThinker", 4, 0, false},  
-								{2, ENT_AOELS, 0, "lsa2_2_7", "AOEThinker", 4, 2, false},  
-								{2, ENT_AOELS, 0, "lsa2_2_8", "AOEThinker", 4, 0, false},  
-								{2, ENT_AOELS, 0, "lsa2_2_9", "AOEThinker", 4, 2, false},  
-								{2, ENT_AOELS, 0, "lsa2_2_10", "AOEThinker", 4, 0, true},  
+								{2, ENT_AOELS, 0, "lsa2_2_1", "AOEThinker", 5, 2.5, true},  
+								{2, ENT_AOELS, 0, "lsa2_2_2", "AOEThinker", 5, 0, false},  
+								{2, ENT_AOELS, 0, "lsa2_2_3", "AOEThinker", 5, 2.5, false},  
+								{2, ENT_AOELS, 0, "lsa2_2_4", "AOEThinker", 5, 0, false},  
+								{2, ENT_AOELS, 0, "lsa2_2_5", "AOEThinker", 5, 2.5, false},  
+								{2, ENT_AOELS, 0, "lsa2_2_6", "AOEThinker", 5, 0, false},  
+								{2, ENT_AOELS, 0, "lsa2_2_7", "AOEThinker", 5, 2.5, false},  
+								{2, ENT_AOELS, 0, "lsa2_2_8", "AOEThinker", 5, 0, false},  
+								{2, ENT_AOELS, 0, "lsa2_2_9", "AOEThinker", 5, 2.5, false},  
+								{2, ENT_AOELS, 0, "lsa2_2_10", "AOEThinker", 5, 0, true},  
 								{2, ENT_AOELS, 0, "cheese2_1", "AOEThinker", 1, 0, true},  
 								{2, ENT_PATRL, 0, "p2_3a", "PatrolInitial", 29, 0.03, 350},
 								{2, ENT_PATRL, 0, "p2_4a", "PatrolInitial", 30, 1.03, 350},
@@ -500,8 +496,8 @@ function barebones:InitGameMode()
 								{2, ENT_AOELS, 0, "lsa3_12", "AOEThinker", 1.5, 0, true},  
                 {1, ENT_MANGO, 0, "mango3_12", nil, true},
 								{1, ENT_MANGO, 0, "mango3_13", nil, true},
-								{2, ENT_PATRL, 0, "p3_1_2a", "PatrolInitial", 35, 0.03, 290, 0.5},
-								{2, ENT_PATRL, 0, "p3_1_3a", "PatrolInitial", 36, 0.03, 290, 0.5},
+								{2, ENT_PATRL, 0, "p3_1_2a", "PatrolInitial", 35, 0.03, 300},
+								{2, ENT_PATRL, 0, "p3_1_3a", "PatrolInitial", 36, 0.03, 300},
 								{2, ENT_GATES, 0, "gate3_2a", "GateThinker", "gate3_2b", Vector(1, 0, 0), 3},       
               },
 							{ -- Level 4 
@@ -527,7 +523,7 @@ function barebones:InitGameMode()
 								{2, ENT_PATRL, 0, "p4_z7", "PatrolInitial", 0, 0.03, 450},
               },
 							{ -- Level 5
-								{2, ENT_PATRL, 0, "p5_1a", "PatrolInitial", 41, 0.03, 225},
+								{2, ENT_PATRL, 0, "p5_1a", "PatrolInitial", 41, 0.03, 230},
 								{1, ENT_MANGO, 0, "mango5_1", nil, true},
 								{2, ENT_GATES, 0, "gate5_1a", "GateThinker", "gate5_1b", Vector(0, -1, 0), 1},
 								{2, ENT_AOELS, 0, "lsa5_1", "AOEThinker", 2.5, 0, true}, 
@@ -535,11 +531,11 @@ function barebones:InitGameMode()
 								{2, ENT_PATRL, 0, "p5_2a", "PatrolInitial", 42, 0.03, 400},
 								{2, ENT_PATRL, 0, "p5_3a", "PatrolInitial", 43, 0.03, 575, 0.25},
 								{2, ENT_PATRL, 0, "p5_4a", "PatrolInitial", 44, 0.03, 575, 0.25},
-								{2, ENT_AOELS, 0, "lsa5_3", "AOEThinker", 4, 2.25, true}, 
+								{2, ENT_AOELS, 0, "lsa5_3", "AOEThinker", 3.5, 0, true}, 
 								{2, ENT_PATRL, 0, "p5_5a", "PatrolInitial", 45, 0.03, 550},  
 								{2, ENT_AOELS, 0, "lsa5_4", "AOEThinker", 4, 0, true},  
 								{2, ENT_AOELS, 0, "lsa5_5", "AOEThinker", 2.5, 0, true},  
-								{2, ENT_AOELS, 0, "lsa5_6", "AOEThinker", 4, 0, true}, 
+								{2, ENT_AOELS, 0, "lsa5_6", "AOEThinker", 5, 0, true}, 
 								{2, ENT_PATRL, 0, "p5_6a", "PatrolInitial", 46, 0.03, 340},
               },
               { -- Level 6

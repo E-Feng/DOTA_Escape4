@@ -347,7 +347,7 @@
       {
         "Target"      "TARGET"
         "ScriptFile"  "items.lua"
-        "Function"    "DropItemOnDeath"
+        "Function"    "DropItemOnDeathMango"
       }
     }  
   }
