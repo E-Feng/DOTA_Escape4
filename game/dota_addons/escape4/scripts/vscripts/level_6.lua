@@ -178,7 +178,8 @@ function Waves:SpawnFull(hp, maxHp)
       spawn = center,
       goal = goal,
       ms = ms,
-      phased = true
+      phased = true,
+      showParticle = false
     })
 
     table.insert(unitsTable, unit)
@@ -228,7 +229,8 @@ function Waves:SpawnRapid(hp, maxHp)
       spawn = center,
       goal = goal,
       ms = ms,
-      phased = true
+      phased = true,
+      showParticle = false
     })
     Timers:CreateTimer(0.2, function()
       Patrols:MoveToGoalAndDie(unit)
@@ -280,7 +282,8 @@ function Waves:SpawnRapidWide(hp, maxHp)
       spawn = center,
       goal = goal,
       ms = ms,
-      phased = true
+      phased = true,
+      showParticle = false
     })
     Timers:CreateTimer(0.2, function()
       Patrols:MoveToGoalAndDie(unit)
@@ -328,7 +331,8 @@ function Waves:SpawnBarrage(hp, maxHp)
           spawn = center,
           goal = goal,
           ms = ms,
-          phased = true
+          phased = true,
+          showParticle = false
         })
         Patrols:MoveToGoalAndDie(unit)
       end)

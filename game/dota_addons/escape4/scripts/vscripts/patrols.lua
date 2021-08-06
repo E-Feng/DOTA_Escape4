@@ -6,6 +6,12 @@ function Patrols:Initialize(dataTable)
   local goal = dataTable.goal
   local ms = dataTable.ms and dataTable.ms or 300
 
+  local showParticle = true  -- Show by default
+
+  if dataTable.showParticle ~= nil then
+    showParticle = dataTable.showParticle
+  end
+
   local unit = CreateUnitByName(unitName, spawn, false, nil, nil, DOTA_TEAM_ZOMBIES)
   unit:SetBaseMoveSpeed(ms)
   unit:SetForwardVector(goal - spawn)
@@ -13,10 +19,15 @@ function Patrols:Initialize(dataTable)
 
   if dataTable.phased then
     Timers:CreateTimer(function()
-      unit:AddNewModifier(unit, nil, "modifier_item_phase_boots_active", {})
       unit:AddNewModifier(unit, nil, "modifier_spectre_spectral_dagger_path_phased", {})
     end)
   end 
+
+  if showParticle then
+    Timers:CreateTimer(function()
+      unit:AddNewModifier(unit, nil, "modifier_item_phase_boots_active", {})
+    end)
+  end
 
   if ms > 550 then
     unit:AddNewModifier(unit, nil, "modifier_bloodseeker_thirst", {})
