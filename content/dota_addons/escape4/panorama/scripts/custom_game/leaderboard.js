@@ -129,44 +129,38 @@ function DataLoaded(tableName, key, data) {
 		return
 	}
 
-	leaderboardInitialized = true;
-
 	// Getting UI containers
 	var leaderboardContainer = $("#LeaderboardContainer");
+	leaderboardContainer.RemoveAndDeleteChildren();
 
-	if (!leaderboardCleared) {
-		leaderboardContainer.RemoveAndDeleteChildren();
-		leaderboardCleared = true
+	if (Object.keys(data).length === 0) {
+		showConnectError(leaderboardContainer);
+		return
 	}
 
-	// Getting data from custom net table
-	//var rawData = CustomNetTables.GetAllTableValues("leaderboard");
-	//$.Msg(rawData)
-	//var data = rawData["0"]["value"];
+	// Processing data
+	if (arr.length == 0) {
+		for (var key in data) {
+			var entry = data[key]
+			arr.push(entry)
+		}
 
-	if (key == "alltime") {
-		//$.Msg(data.length);
-		updateLeaderboard(leaderboardContainer, [data], -2);
-	} else if (key == "leaderboard") {
-		if (Object.keys(data).length === 0) {
-			showConnectError(leaderboardContainer);
-		} else {
-			for (var entry in data) {
-				var entryData = data[entry];
-				arr.push(entryData);
-
-				allTimes.push(entryData.totaltime);
-			}
-
-			arr = sortAndTrimArray(arr, count);
-
-			allTimes.sort((a,b) => (a > b) ? 1 : -1);
-			allTimes = allTimes.slice(0, count);
-			//$.Msg(allTimes.slice(-1)[0]);
-
-			updateLeaderboard(leaderboardContainer, arr, -1);
+		if (allTimes.length == 0) {
+			allTimes.push(entry.totaltime);
 		}
 	}
+
+
+	arr = sortAndTrimArray(arr, count);
+
+	allTimes.sort((a,b) => (a > b) ? 1 : -1);
+	allTimes = allTimes.slice(0, count);
+
+	// Updating leaderboard
+	updateLeaderboard(leaderboardContainer, [arr[0]], -2);
+	updateLeaderboard(leaderboardContainer, arr.slice(1), -1)
+
+	$.Msg("Finished loading leaderboard...")
 }
 
 function FinishedGame( table_name ) {
@@ -216,9 +210,10 @@ function UpdateWinners() {
 		$.Msg("No data loaded into net tables yet, returning")
 		return
 	}
-	winnersInitialized = true;
 
 	var container = $("#WinnersContainer");
+	container.RemoveAndDeleteChildren();
+
 	var winners = [];
 	var len = 11;
 
@@ -242,12 +237,15 @@ function UpdateWinners() {
 
 $.Msg("Leaderboard.js function running");
 //$.Msg($.GetContextPanel().layoutfile);
+CustomNetTables.SubscribeNetTableListener( "leaderboard", DataLoaded );
+CustomNetTables.SubscribeNetTableListener( "winners", UpdateWinners );
 
 var layoutfile = $.GetContextPanel().layoutfile;
-var allTimes = [];
 var arr = [];
-var count = 10;
+var allTimes = [];
+var count = 11;
 
+/*
 var leaderboardCleared = false
 
 // Possible fix to leaderboard not rendering
@@ -263,9 +261,7 @@ if (!winnersInitialized) {
 	$.Msg("Runninig initial winners functions")
 	UpdateWinners()
 }
-
-CustomNetTables.SubscribeNetTableListener( "leaderboard", DataLoaded );
-CustomNetTables.SubscribeNetTableListener( "winners", UpdateWinners );
+*/
 
 //CustomNetTables.SubscribeNetTableListener( "gamescore", FinishedGame );
 

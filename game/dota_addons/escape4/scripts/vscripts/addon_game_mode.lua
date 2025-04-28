@@ -42,6 +42,12 @@ function Precache(context)
   PrecacheResource("particle_folder", "particles/beacons", context)
 
   PrecacheResource("particle", "particles/items4_fx/bull_whip.vpcf", context)
+  PrecacheResource("particle", "particles/generic_gameplay/generic_stunned.vpcf", context)
+  PrecacheResource("particle", "particles/units/heroes/hero_rattletrap/rattletrap_hookshot.vpcf", context)
+  PrecacheResource("particle", "particles/units/heroes/hero_enchantress/ench_sproink.vpcf", context)
+  PrecacheResource("particle", "particles/units/heroes/hero_shredder/shredder_timberchain.vpcf", context)
+  PrecacheResource("particle", "particles/units/heroes/hero_invoker/invoker_sun_strike.vpcf", context)
+
 
 	-- Models can also be precached by folder or individually
 	-- PrecacheModel should generally used over PrecacheResource for individual models

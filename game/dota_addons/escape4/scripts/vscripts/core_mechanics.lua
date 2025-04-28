@@ -41,19 +41,21 @@ function barebones:HeroKilled(hero, attacker, ability)
   -- Saves position of killed hero into table
   local playerIdx = hero:GetEntityIndex()
   -- If hero steps onto grass/lava origin is moved closer to path
-  hero:SetBaseMagicalResistanceValue(25)
+  -- hero:SetBaseMagicalResistanceValue(25)
   hero.deadHeroPos = hero:GetAbsOrigin()
   hero.mana = hero:GetMana()
 
-  if string.find(ability:GetClassname(), "ability") then
-    if ability:GetAbilityName() == "self_immolation" then
-      --print("Moving back location of hero and particle")
-      local shift = -30
-      local forVector = hero:GetForwardVector():Normalized()
-      local newDeadPos = hero:GetAbsOrigin() + forVector*shift
-      hero.deadHeroPos = newDeadPos
-      --print("Normalized forward vector: ", forVector)
-      --print("Altered position: ", newDeadPos)
+  if ability ~= nil then
+    if string.find(ability:GetClassname(), "ability") then
+      if ability:GetAbilityName() == "self_immolation" then
+        --print("Moving back location of hero and particle")
+        local shift = -30
+        local forVector = hero:GetForwardVector():Normalized()
+        local newDeadPos = hero:GetAbsOrigin() + forVector*shift
+        hero.deadHeroPos = newDeadPos
+        --print("Normalized forward vector: ", forVector)
+        --print("Altered position: ", newDeadPos)
+      end
     end
   end
   --print(hero:GetAbsOrigin())
@@ -160,9 +162,10 @@ function barebones:ReviveAll()
   local respawnLoc = GameRules.Checkpoint
   local caster
   for i,hero in pairs(Players) do
-    if hero:IsAlive() then
-      hero:SetBaseMagicalResistanceValue(25)
-    end
+    -- if hero:IsAlive() then
+    --   hero:SetBaseMagicalResistanceValue(25)
+    -- end
+    hero.isSafe = true
     hero:SetRespawnPosition(respawnLoc)
     --print("Respawn location set to", respawnLoc)
     hero:RespawnHero(false, false)

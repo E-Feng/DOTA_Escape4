@@ -66,15 +66,76 @@ function modifier_kill_radius:OnIntervalThink()
         false)
           
       for _,target in pairs(targets) do
+        -- print(target)
         --if target:GetAbsOrigin().z < 130 then
         -- Removing if statement for now, prevents jumping over zombies
         --if math.abs(target:GetAbsOrigin().z - caster:GetAbsOrigin().z) < 5 then
-          --target:SetBaseMagicalResistanceValue(25)
-          target.isSafe = true
+          target.isSafe = false
           target.outOfBoundsDeath = false
-          target:ForceKill(true)
+          --target:ForceKill(true)
+
+          local damageTable = {
+            victim = target,
+            attacker = caster,
+            damage = 1,
+            damage_type = DAMAGE_TYPE_PURE
+          }
+          -- target:SetBaseMagicalResistanceValue(25)
+          -- print(target:GetBaseMagicalResistanceValue())
+          -- ApplyDamage(damageTable)
         --end
       end       
     end 
+  end
+end
+
+-----------------
+-- Self Immolation --
+-----------------
+
+self_immolation_lua = self_immolation_lua or class({})
+LinkLuaModifier("modifier_self_immolation", "abilities", LUA_MODIFIER_MOTION_NONE)
+
+function self_immolation_lua:GetIntrinsicModifierName()
+	return "modifier_self_immolation"
+end
+
+modifier_self_immolation = modifier_self_immolation or class({})
+function modifier_self_immolation:RemoveOnDeath() return false end
+
+function modifier_self_immolation:IsHidden()
+	return true
+end
+
+function modifier_self_immolation:OnCreated()
+  if IsServer() then
+    self.damage = self:GetAbility():GetSpecialValueFor("damage")
+    self.rate = self:GetAbility():GetSpecialValueFor("rate")
+
+    if not self.timer then
+      --print("Starting timer level", self:GetAbility():GetLevel())
+      self:StartIntervalThink(self.rate)
+      self.timer = true
+    end
+  end
+end
+
+function modifier_self_immolation:OnIntervalThink()
+  if IsServer() then
+    local caster = self:GetCaster()
+
+    if caster:IsAlive() then
+      if not caster.isSafe then
+        local damageTable = {
+          victim = caster,
+          attacker = caster,
+          damage = self.damage,
+          damage_type = DAMAGE_TYPE_MAGICAL
+        }
+        -- ApplyDamage(damageTable)
+        caster:Kill(self:GetAbility(), caster)
+      end
+
+    end
   end
 end

@@ -6,17 +6,19 @@ local dedicatedServerKey = "M4_" .. (IsDedicatedServer() and GetDedicatedServerK
 local leaderboardURL = "https://dota-escape4-default-rtdb.firebaseio.com/" .. dedicatedServerKey .. "/"
 local patreonURL = "https://dota-escape-patreons.firebaseio.com/" .. dedicatedServerKey .. "/"
 
-local DENY_BUGGED_SCORES = false
+local DENY_BUGGED_SCORES = true
 
 local leaderboard = {}
 local gamescore
 local numEntries = 0
+local displayEntries = 12
 local maxEntries = 20
 local fastestTime = 1e9
 local slowestTime = 0
 local slowestId
 
 local winners = {}
+local maxWinners = 12
 
 WebApi.patreonsLoaded = false
 WebApi.patreons = {}
@@ -30,12 +32,7 @@ function WebApi:GetLeaderboard()
       local data = json.decode(response.Body)
       
       for k,v in pairs(data) do 
-        if string.sub(k, 1, 5) == "00000" then
-          print("Sending alltime leaderboard result to panaroma")
-          CustomNetTables:SetTableValue("leaderboard", "alltime", v)
-        else
-          table.insert(leaderboard, v) 
-        end
+        table.insert(leaderboard, v) 
       end
       table.sort(leaderboard, function(a,b) return a.totaltime < b.totaltime end)
 
@@ -46,9 +43,20 @@ function WebApi:GetLeaderboard()
 
       slowestTime = math.min(slowestTime, 5400)
 
-      local cropped = {unpack(leaderboard, 1, maxEntries)}
+      local cropped = {unpack(leaderboard, 1, displayEntries)}
       print("Sending updated leaderboard results to panaroma")
       CustomNetTables:SetTableValue("leaderboard", "leaderboard", cropped)
+
+      local c = 0
+      Timers:CreateTimer(5, function()
+        cropped[1].matchId = cropped[1].matchId + RandomInt(1, 5)
+        if c > 60 or gamescore ~= nil then
+          return
+        end
+        CustomNetTables:SetTableValue("leaderboard", "leaderboard", cropped)
+        c = c + 1
+        return 4
+      end)
       
       if isTesting then
         --DeepPrintTable(leaderboard)
@@ -87,17 +95,31 @@ function WebApi:GetPatreons()
             -- Creating winners array and sending to panaroma
             if group == "winners" then
               --winners[v.name] = tonumber(v.level)
+              v['levelSort'] = tonumber(v.level) + RandomFloat(-0.5, 0.5)
               table.insert(winners, v)
             end
           end
         end
 
         print("Winners table")
-        DeepPrintTable(winners)
-        CustomNetTables:SetTableValue("winners", "winners", winners)
+        table.sort(winners, function(a,b) return a.levelSort > b.levelSort end)
+        local croppedWinners = {unpack(winners, 1, maxWinners)}
+        DeepPrintTable(croppedWinners)
+        CustomNetTables:SetTableValue("winners", "winners", croppedWinners)
+
+        local c = 0
+        Timers:CreateTimer(5, function()
+          croppedWinners[1].levelSort = croppedWinners[1].levelSort + RandomInt(1, 5)
+          if c > 60 or gamescore ~= nil then
+            return
+          end
+          CustomNetTables:SetTableValue("winners", "winners", croppedWinners)
+          c = c + 1
+          return 4
+        end)
 
         print("Patreons table")
-        DeepPrintTable(WebApi.patreons)
+        --DeepPrintTable(WebApi.patreons)
 
         WebApi.patreonsLoaded = true
         print("Patreons GET request finished")
@@ -209,7 +231,7 @@ function WebApi:FinalizeGameScoreAndSend()
   gamescore.lives = GameRules.Lives
   --DeepPrintTable(gamescore)
 
-  local cheats = Convars:GetBool("sv_cheats") or GameRules:IsCheatMode() or TableLength(gamescore.players) <= 1
+  local cheats = Convars:GetBool("sv_cheats") or GameRules:IsCheatMode()
   local bugged = false
   local patreonUsed = _G.patreonUsed
 

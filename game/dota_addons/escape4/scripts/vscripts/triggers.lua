@@ -1,10 +1,11 @@
 function OnStartSafety(trigger)
 	local ent = trigger.activator
+	print(ent:GetName(), " has stepped on safety trigger")
 	if not ent then return end
 	if ent:IsRealHero() and ent:IsAlive() then
 		ent.isSafe = true
+		ent.tempIsSafe = true
 		ent:SetBaseMagicalResistanceValue(100)
-		print(ent:GetName(), " has stepped on safety trigger")
 		return
 	end
 end
@@ -15,7 +16,7 @@ function OnEndSafety(trigger)
 	if not ent then return end
 
 	if ent:IsRealHero() and ent:IsAlive() then
-		ent.isSafe = false
+		ent.tempIsSafe = false
 
 		-- Dealing with out of bounds spells
 		local hasModifier = false
@@ -45,15 +46,17 @@ function OnEndSafety(trigger)
 						if ent:GetAbsOrigin().z > 500 then
 							print("Landed on map border, killing now")
 							ent.outOfBoundsDeath = true
-							ent:SetBaseMagicalResistanceValue(25)
+							ent.isSafe = false
+							-- ent:SetBaseMagicalResistanceValue(25)
 						else
-							if ent.isSafe then
+							if ent.tempIsSafe then
 								print("Landed on safe after out of bounds spell")
 								ent.outOfBoundsDeath = false
 							else
 								print("Landed on lava after spell, killing now")
 								ent.outOfBoundsDeath = true
-								ent:SetBaseMagicalResistanceValue(25)
+								ent.isSafe = false
+								-- ent:SetBaseMagicalResistanceValue(25)
 							end
 						end	
 						return
@@ -68,17 +71,19 @@ function OnEndSafety(trigger)
 					return 0.03
 				else
 					Timers:CreateTimer(0.2, function()
-						if not ent.isSafe then
+						if not ent.tempIsSafe then
 							print(ent:GetName(), " will be killed, hooking from highground")
-							ent:SetBaseMagicalResistanceValue(25)
+							ent.isSafe = false
+							-- ent:SetBaseMagicalResistanceValue(25)
 						end
 					end)
 				end
 				return
 			end)
 		else
-			print(ent:GetName(), " will be killed")
-			ent:SetBaseMagicalResistanceValue(25)
+			print(ent:GetName(), " will be killed, walked off path")
+			ent.isSafe = false
+			-- ent:SetBaseMagicalResistanceValue(25)
 		end
 
 		return
@@ -87,12 +92,12 @@ end
 
 function OnStartKill(trigger)
 	local ent = trigger.activator
+	print(ent:GetName(), " has stepped on kill trigger")
 	if not ent then return end
-	--print(ent:GetName(), " has stepped on trigger")
 	if ent:IsRealHero() and ent:IsAlive() then
 		ent.isSafe = false
 		ent.outOfBoundsDeath = true
-		ent:SetBaseMagicalResistanceValue(25)
+		-- ent:SetBaseMagicalResistanceValue(25)
 		return
 	end
 end

@@ -147,8 +147,15 @@ function barebones:CastLSA(unit, castPos, emitSound)
                                     FIND_ANY_ORDER, 
                                     false)
   for _,target in pairs(targets) do
-    --target:SetBaseMagicalResistanceValue(25)
-    target:ForceKill(true)
+    -- target:SetBaseMagicalResistanceValue(25)
+    --target:ForceKill(true)
+    local damageTable = {
+      victim = target,
+      attacker = unit,
+      damage = 1,
+      damage_type = DAMAGE_TYPE_PURE
+    }
+    ApplyDamage(damageTable)
   end
 end
 

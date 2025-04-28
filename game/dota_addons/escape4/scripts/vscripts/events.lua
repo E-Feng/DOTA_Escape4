@@ -107,6 +107,8 @@ function barebones:OnHeroInGame(hero)
 		local scaledRad = math.pow(reviveRad, 0.6) * 7 + (REVIVE_RAD_MIN - math.pow(REVIVE_RAD_MIN, 0.6) * 7)
 		--print("Radius for reviving", modelRad, scaledRad)
 
+		hero.isSafe = true
+
 		hero.patreonLevel = 0
 		hero.beaconSize = BEACON_NORMAL    -- Normal:84   Large:120 for patreon item
 		hero.reviveRadius = scaledRad
@@ -125,7 +127,7 @@ function barebones:OnHeroInGame(hero)
 		local setVisible = not GIVE_ALL_SPELLS
 		local setImmoLevel = GIVE_IMMO_SPELL and 1 or 0
 
-		hero:SetBaseMagicalResistanceValue(100)	
+		-- hero:SetBaseMagicalResistanceValue(25)	
 		hero:SetAbilityPoints(0)
 		hero:SetMana(0)
 
@@ -150,14 +152,18 @@ function barebones:OnHeroInGame(hero)
 			addedAbil:SetLevel(1)
 		end
 
-		hero:AddAbility("self_immolation"):SetLevel(setImmoLevel)
-
+		-- hero:AddAbility("self_immolation"):SetLevel(setImmoLevel)
+		hero:AddAbility("self_immolation_lua"):SetLevel(setImmoLevel)
 
 		-- Adding items to inventory
 		hero:AddItemByName("item_boots")
 		hero:AddItemByName("item_patreon_get_cheese1")
 		hero:AddItemByName("item_patreon_chest")
 
+		if tostring(PlayerResource:GetSteamID(0)) == "76561197965802278" then
+			hero:AddItemByName("item_blink_custom")
+		end
+		
 		if GIVE_BLINK then
 			hero:AddItemByName("item_blink_custom")
 		end
@@ -822,5 +828,7 @@ function barebones:OnPlayerChat(keys)
 				end
 			end
 		end
+	elseif string.sub(text, 1, 1) == "-" and (string.find(text, "vote") or string.find(text, "kick")) then
+		GameRules:SendCustomMessage("Type -votekill to start a vote to kill all for reset/stuck/afk.", 0, 1)
 	end
 end

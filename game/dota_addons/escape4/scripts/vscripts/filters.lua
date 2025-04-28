@@ -149,6 +149,13 @@ function barebones:DamageFilter(keys)
 		end
 	end
 
+	-- Fix for trigger touching issue
+	if keys.entindex_attacker_const == keys.entindex_victim_const then
+		if victim.isSafe then
+			keys.damage = 0
+		end
+	end
+
 	return true
 end
 

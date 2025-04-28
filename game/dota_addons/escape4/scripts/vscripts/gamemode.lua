@@ -101,6 +101,23 @@ function barebones:OnGameInProgress()
 
 	-- Setting up gamescore data collection
 	WebApi:InitGameScore()
+
+	-- Setting up bot spawn for solo players
+	local nPlayers = PlayerResource:GetPlayerCount()
+	if nPlayers == 1 then
+		local playerId
+		for _,hero in pairs(Players) do
+			playerId = hero:GetPlayerID()
+		end
+
+		local randomHero = GetRandomHeroName()
+		local spawn = Entities:FindByName(nil, "checkpoint1"):GetAbsOrigin()
+
+		local bot = GameRules:AddBotPlayerWithEntityScript(randomHero, "Buddy", DOTA_TEAM_GOODGUYS, nil, false)
+		bot:SetControllableByPlayer(playerId, true)
+		bot:SetAbsOrigin(spawn)
+		bot.safe = true
+	end
 end
 
 -- This function initializes the game mode and is called before anyone loads into the game
